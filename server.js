@@ -5,30 +5,36 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
-// LinkedIn API credentials
+// LinkedIn API credentials (provided by you)
 const CLIENT_ID = '86721rnve8r8sj';
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';
-const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';
+const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
 // Step 1: Redirect to LinkedIn for OAuth
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_liteprofile r_organization_social';
+  const scope = 'r_liteprofile r_organization_social';  // Define the permissions you want from the user
   res.redirect(
     `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}`
   );
 });
 
-// Step 2: Handle LinkedIn's OAuth callback
+// Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
 app.get('/linkedin-callback', (req, res) => {
-  const code = req.query.code;
+  const code = req.query.code;  // Capture the authorization code from the query parameters
 
-  // Exchange the authorization code for an access token
+  if (!code) {
+    return res.send("Authorization code is missing in the request.");
+  }
+
+  console.log('Authorization Code:', code);  // Log the authorization code to check if it's received
+
+  // Step 3: Exchange the authorization code for an access token
   request.post(
     {
       url: 'https://www.linkedin.com/oauth/v2/accessToken',
       form: {
         grant_type: 'authorization_code',
-        code: code,
+        code: code,  // Use the captured code
         redirect_uri: REDIRECT_URI,
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
@@ -45,29 +51,6 @@ app.get('/linkedin-callback', (req, res) => {
         return res.send("Failed to retrieve access token. Response: " + body);
       }
 
-      // Use the access token to make requests to LinkedIn's API
-      request.get(
-        {
-          url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:{your-organization-id})',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-        (error, response, body) => {
-          if (error) {
-            return res.send("Error occurred during LinkedIn API request: " + error);
-          }
-          
-          const posts = JSON.parse(body);
-          res.send(posts);  // Send the posts back as the response
-        }
-      );
-    }
-  );
-});
+      console.log('Access Token:', token);  // Log the access token
 
-// Start the server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+     
