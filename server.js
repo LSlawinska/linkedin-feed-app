@@ -12,7 +12,7 @@ const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';
 
 // Step 1: Redirect to LinkedIn for OAuth
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_liteprofile r_organization_social';  // Define the permissions you want from the user
+  const scope = 'r_organization_social';  // Request organization-level scope
   res.redirect(
     `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}`
   );
@@ -23,10 +23,10 @@ app.get('/linkedin-callback', (req, res) => {
   const code = req.query.code;  // Capture the authorization code from the query parameters
 
   if (!code) {
-    return res.send("Authorization code is missing in the request.");
+    return res.send("Authorization code is missing in the request. Full URL: " + req.url);  // Log the full URL for debugging
   }
 
-  console.log('Authorization Code:', code);  // Log the authorization code to check if it's received
+  console.log('Authorization Code:', code);  // Log the authorization code
 
   // Step 3: Exchange the authorization code for an access token
   request.post(
