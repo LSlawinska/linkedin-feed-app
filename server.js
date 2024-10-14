@@ -53,4 +53,29 @@ app.get('/linkedin-callback', (req, res) => {
 
       console.log('Access Token:', token);  // Log the access token
 
-     
+      // Step 4: Use the access token to make a request to LinkedIn's API to fetch posts
+      request.get(
+        {
+          url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        (error, response, body) => {
+          if (error) {
+            return res.send("Error occurred during LinkedIn API request: " + error);
+          }
+
+          const posts = JSON.parse(body);
+          res.send(posts);  // Send the posts back as the response
+        }
+      );
+    }
+  );
+});
+
+// Step 5: Start the server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
