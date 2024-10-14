@@ -10,12 +10,14 @@ const CLIENT_ID = '86721rnve8r8sj';
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
-// Step 1: Redirect to LinkedIn for OAuth
+// Step 1: Redirect to LinkedIn for OAuth with logging
 app.get('/auth/linkedin', (req, res) => {
   const scope = 'r_organization_social';  // Request organization-level scope
-  res.redirect(
-    `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}`
-  );
+  const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
+  
+  console.log('Redirecting to LinkedIn with URL:', redirectUrl);  // Log the redirect URL
+  
+  res.redirect(redirectUrl);
 });
 
 // Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
