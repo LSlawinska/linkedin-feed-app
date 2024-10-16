@@ -10,29 +10,31 @@ const CLIENT_ID = '86721rnve8r8sj';  // Your Client ID
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Your Client Secret
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
-// Route to initiate LinkedIn OAuth (Step 1)
+// Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_liteprofile';  // Request the liteprofile scope to fetch basic profile
+  const scope = 'r_organization_social';  // Use the r_organization_social scope
   const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
   
   res.redirect(redirectUrl);  // Redirect to LinkedIn for authorization
 });
 
-// Handle LinkedIn OAuth callback and fetch access token (Step 2)
+// Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
 app.get('/linkedin-callback', (req, res) => {
-  const code = req.query.code;  // Get authorization code from the query parameters
+  const code = req.query.code;  // Capture the authorization code from the query parameters
 
   if (!code) {
-    return res.send("Authorization code is missing.");
+    return res.send("Authorization code is missing in the request.");
   }
 
-  // Exchange authorization code for an access token
+  console.log('Authorization Code:', code);  // Log the authorization code
+
+  // Step 3: Exchange the authorization code for an access token
   request.post(
     {
       url: 'https://www.linkedin.com/oauth/v2/accessToken',
       form: {
         grant_type: 'authorization_code',
-        code: code,
+        code: code,  // Use the captured code
         redirect_uri: REDIRECT_URI,
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
@@ -44,29 +46,32 @@ app.get('/linkedin-callback', (req, res) => {
       }
 
       const token = JSON.parse(body).access_token;
+
       if (!token) {
-        return res.send("Failed to retrieve access token.");
+        return res.send("Failed to retrieve access token. Response: " + body);
       }
 
-      // Store the access token (for simplicity, using a global variable)
+      console.log('Access Token:', token);  // Log the access token
+
+      // Step 4: Store the access token and inform user
       global.accessToken = token;
-      res.send("Access token acquired. You can now fetch profile using /fetch-profile.");
+      res.send("Access token acquired. You can now fetch organization posts using /fetch-organization-posts.");
     }
   );
 });
 
-// Step 3: Create an API route to fetch LinkedIn profile data
-app.get('/fetch-profile', (req, res) => {
+// Step 5: Create an API route to fetch LinkedIn organization posts
+app.get('/fetch-organization-posts', (req, res) => {
   // Ensure the access token is available
   const token = global.accessToken;
   if (!token) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Make the API request to fetch LinkedIn profile data
+  // Make the API request to fetch organization posts
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/me',  // Fetch your own LinkedIn profile data
+      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -76,13 +81,13 @@ app.get('/fetch-profile', (req, res) => {
         return res.status(500).send("Error occurred during LinkedIn API request: " + error);
       }
 
-      const profile = JSON.parse(body);
-      res.json(profile);  // Send the profile data to the front-end as JSON
+      const posts = JSON.parse(body);
+      res.json(posts);  // Send the posts back as the response
     }
   );
 });
 
-// Start the server
+// Step 6: Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
