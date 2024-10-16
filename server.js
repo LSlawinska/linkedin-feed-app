@@ -80,13 +80,13 @@ app.get('/fetch-organization-posts', (req, res) => {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Replace '2280995' with your actual LinkedIn organization ID (as a number)
-  const organizationId = '2280995';
+  // Use the numeric organization ID directly
+  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
 
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:${organizationId})`,  // No URL encoding needed here
+      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(${organizationId})`,  // Use the numeric organization ID directly
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -102,19 +102,20 @@ app.get('/fetch-organization-posts', (req, res) => {
   );
 });
 
+
 // Step 6: Create an API route to fetch LinkedIn organization profile
 app.get('/fetch-organization-profile', (req, res) => {
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Replace '2280995' with your actual LinkedIn organization ID (as a number)
-  const organizationId = '2280995';
+  // Use the numeric organization ID directly
+  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
 
   // Make the API request to fetch organization profile
   request.get(
     {
-      url: `https://api.linkedin.com/v2/organizations/urn:li:organization:${organizationId}`,  // No URL encoding needed here
+      url: `https://api.linkedin.com/v2/organizations/${organizationId}`,  // Use the numeric organization ID directly
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -129,6 +130,7 @@ app.get('/fetch-organization-profile', (req, res) => {
     }
   );
 });
+
 
 
 // Start the server
