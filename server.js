@@ -83,7 +83,7 @@ app.get('/fetch-organization-posts', (req, res) => {
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:{your-organization-id})',  // Replace with your organization ID
+      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
