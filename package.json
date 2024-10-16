@@ -13,6 +13,6 @@
     "body-parser": "^1.20.3",
     "express": "^4.21.1",
     "request": "^2.88.2"
-    "cors": "^2.8.5"  // Add this line to install CORS
+    "cors": "^2.8.5"
   }
 }
