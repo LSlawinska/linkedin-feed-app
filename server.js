@@ -27,8 +27,7 @@ let accessToken = null;  // Initialize as null
 app.get('/auth/linkedin', (req, res) => {
   const scope = 'r_organization_social';  // Ensure this scope is used for reading organization posts
   const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
-  res.redirect(redirectUrl);
-}); // Redirect to LinkedIn for authorization
+  res.redirect(redirectUrl); // Redirect to LinkedIn for authorization
 });
 
 // Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
