@@ -76,15 +76,17 @@ app.get('/linkedin-callback', (req, res) => {
 
 // Step 5: Create an API route to fetch LinkedIn organization posts
 app.get('/fetch-organization-posts', (req, res) => {
-  // Ensure the access token is available
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
+  // Replace '2280995' with your actual LinkedIn organization ID (as a number)
+  const organizationId = '2280995';
+
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:12345678)',  // Replace with your organization ID
+      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:${organizationId})`,  // No URL encoding needed here
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -100,17 +102,19 @@ app.get('/fetch-organization-posts', (req, res) => {
   );
 });
 
-// Step 6: Create a simpler API route to fetch LinkedIn organization profile
+// Step 6: Create an API route to fetch LinkedIn organization profile
 app.get('/fetch-organization-profile', (req, res) => {
-  // Ensure the access token is available
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
+  // Replace '2280995' with your actual LinkedIn organization ID (as a number)
+  const organizationId = '2280995';
+
   // Make the API request to fetch organization profile
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/organizations/urn:li:organization:12345678',  // Replace with your organization ID
+      url: `https://api.linkedin.com/v2/organizations/urn:li:organization:${organizationId}`,  // No URL encoding needed here
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -125,6 +129,7 @@ app.get('/fetch-organization-profile', (req, res) => {
     }
   );
 });
+
 
 // Start the server
 const port = process.env.PORT || 3000;
