@@ -20,6 +20,9 @@ const CLIENT_ID = '86721rnve8r8sj';  // Replace with your Client ID
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Replace with your Client Secret
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
+// Global variable to store the access token
+let accessToken = null;  // Initialize as null
+
 // Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
 app.get('/auth/linkedin', (req, res) => {
   const scope = 'r_organization_social';  // Use the r_organization_social scope
@@ -64,7 +67,7 @@ app.get('/linkedin-callback', (req, res) => {
       console.log('Access Token:', token);  // Log the access token
 
       // Step 4: Store the access token and inform the user
-      global.accessToken = token;
+      accessToken = token;  // Store the access token in the global variable
       res.send("Access token acquired. You can now fetch organization posts using /fetch-organization-posts.");
     }
   );
@@ -73,8 +76,7 @@ app.get('/linkedin-callback', (req, res) => {
 // Step 5: Create an API route to fetch LinkedIn organization posts
 app.get('/fetch-organization-posts', (req, res) => {
   // Ensure the access token is available
-  const token = global.accessToken;
-  if (!token) {
+  if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
@@ -83,7 +85,7 @@ app.get('/fetch-organization-posts', (req, res) => {
     {
       url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:{your-organization-id})',  // Replace with your organization ID
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     },
     (error, response, body) => {
