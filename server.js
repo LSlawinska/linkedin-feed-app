@@ -25,9 +25,10 @@ let accessToken = null;  // Initialize as null
 
 // Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_organization_social';  // Ensure this scope is used for reading organization posts
+  const scope = 'r_organization_social';  // Use the r_organization_social scope
   const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
-  res.redirect(redirectUrl); // Redirect to LinkedIn for authorization
+  
+  res.redirect(redirectUrl);  // Redirect to LinkedIn for authorization
 });
 
 // Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
@@ -67,7 +68,7 @@ app.get('/linkedin-callback', (req, res) => {
 
       // Step 4: Store the access token and inform the user
       accessToken = token;  // Store the access token in the global variable
-      res.send("Access token acquired. You can now fetch organization posts using /fetch-organization-posts.");
+      res.send("Access token acquired. You can now fetch organization posts or profile using /fetch-organization-posts or /fetch-organization-profile.");
     }
   );
 });
@@ -82,7 +83,7 @@ app.get('/fetch-organization-posts', (req, res) => {
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
+      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:12345678)',  // Replace with your organization ID
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -94,6 +95,32 @@ app.get('/fetch-organization-posts', (req, res) => {
 
       const posts = JSON.parse(body);
       res.json(posts);  // Send the posts back as the response
+    }
+  );
+});
+
+// Step 6: Create a simpler API route to fetch LinkedIn organization profile
+app.get('/fetch-organization-profile', (req, res) => {
+  // Ensure the access token is available
+  if (!accessToken) {
+    return res.status(403).send("No access token available. Please authenticate first.");
+  }
+
+  // Make the API request to fetch organization profile
+  request.get(
+    {
+      url: 'https://api.linkedin.com/v2/organizations/urn:li:organization:12345678',  // Replace with your organization ID
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    (error, response, body) => {
+      if (error) {
+        return res.status(500).send("Error occurred during LinkedIn API request: " + error);
+      }
+
+      const organizationProfile = JSON.parse(body);
+      res.json(organizationProfile);  // Send the organization profile back as the response
     }
   );
 });
