@@ -1,24 +1,23 @@
 const express = require('express');
 const request = require('request');
 const bodyParser = require('body-parser');
+const cors = require('cors');  // Import CORS middleware
 
 const app = express();
 app.use(bodyParser.json());
 
-const cors = require('cors');
-
-// Allow CORS from the website's domain
+// CORS configuration - Allow your website's domain
 const corsOptions = {
-  origin: 'https://sdglines.com',  // Replace with your website's domain
+  origin: 'https://sdglines.com',  // Replace with your actual website domain
   optionsSuccessStatus: 200
 };
 
+// Apply CORS middleware before routes
 app.use(cors(corsOptions));
 
-
 // LinkedIn API credentials (use your actual Client ID, Client Secret, and Redirect URI)
-const CLIENT_ID = '86721rnve8r8sj';  // Your Client ID
-const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Your Client Secret
+const CLIENT_ID = '86721rnve8r8sj';  // Replace with your Client ID
+const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Replace with your Client Secret
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
 // Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
@@ -64,7 +63,7 @@ app.get('/linkedin-callback', (req, res) => {
 
       console.log('Access Token:', token);  // Log the access token
 
-      // Step 4: Store the access token and inform user
+      // Step 4: Store the access token and inform the user
       global.accessToken = token;
       res.send("Access token acquired. You can now fetch organization posts using /fetch-organization-posts.");
     }
@@ -82,7 +81,7 @@ app.get('/fetch-organization-posts', (req, res) => {
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
+      url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:{your-organization-id})',  // Replace with your organization ID
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -98,7 +97,7 @@ app.get('/fetch-organization-posts', (req, res) => {
   );
 });
 
-// Step 6: Start the server
+// Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
