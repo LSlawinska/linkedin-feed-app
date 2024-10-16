@@ -75,7 +75,6 @@ app.get('/linkedin-callback', (req, res) => {
 });
 
 // Step 5: Create an API route to fetch LinkedIn organization posts
-// Route to fetch LinkedIn organization posts
 app.get('/fetch-organization-posts', (req, res) => {
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
@@ -87,7 +86,6 @@ app.get('/fetch-organization-posts', (req, res) => {
   // Make the API request to fetch organization posts
   request.get(
     {
-      // Updated URL format for fetching posts
       url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=urn:li:organization:${organizationId}`,  // No List(), directly use the urn format
       headers: {
         Authorization: `Bearer ${accessToken}`,  // Use the access token
@@ -103,8 +101,6 @@ app.get('/fetch-organization-posts', (req, res) => {
     }
   );
 });
-
-
 
 // Step 6: Create an API route to fetch LinkedIn organization profile
 app.get('/fetch-organization-profile', (req, res) => {
@@ -134,7 +130,33 @@ app.get('/fetch-organization-profile', (req, res) => {
   );
 });
 
+// Step 7: Create an API route to fetch LinkedIn organization followers (New test)
+app.get('/fetch-organization-followers', (req, res) => {
+  if (!accessToken) {
+    return res.status(403).send("No access token available. Please authenticate first.");
+  }
 
+  // Use the numeric organization ID directly
+  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
+
+  // Make the API request to fetch organization followers
+  request.get(
+    {
+      url: `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}`,  // Followers API
+      headers: {
+        Authorization: `Bearer ${accessToken}`,  // Use the access token
+      },
+    },
+    (error, response, body) => {
+      if (error) {
+        return res.status(500).send("Error occurred during LinkedIn API request: " + error);
+      }
+
+      const followersData = JSON.parse(body);
+      res.json(followersData);  // Send the followers data back as the response
+    }
+  );
+});
 
 // Start the server
 const port = process.env.PORT || 3000;
