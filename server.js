@@ -5,9 +5,9 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
-// LinkedIn API credentials
-const CLIENT_ID = '86721rnve8r8sj';  // Your LinkedIn App Client ID
-const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Your LinkedIn App Client Secret
+// LinkedIn API credentials (use your actual Client ID, Client Secret, and Redirect URI)
+const CLIENT_ID = '86721rnve8r8sj';
+const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
 // Force HTTPS redirection to avoid issues with SSL or mixed content
@@ -18,9 +18,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Step 1: Redirect to LinkedIn for OAuth authorization
+// Step 1: Redirect to LinkedIn for OAuth with logging
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_organization_social';  // Request organization-level scope
+  const scope = 'r_liteprofile';  // Use basic profile scope for testing
   const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
   
   console.log('Redirecting to LinkedIn with URL:', redirectUrl);  // Log the redirect URL
@@ -28,11 +28,9 @@ app.get('/auth/linkedin', (req, res) => {
   res.redirect(redirectUrl);
 });
 
-// Step 2: Handle LinkedIn's OAuth callback
+// Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
 app.get('/linkedin-callback', (req, res) => {
-  console.log('Full request details:', req.query);  // Log the entire query object for debugging
-  
-  const code = req.query.code;  // Extract the authorization code from query parameters
+  const code = req.query.code;  // Capture the authorization code from the query parameters
 
   if (!code) {
     return res.send("Authorization code is missing in the request. Full URL: " + req.url);  // Log the full URL for debugging
@@ -65,10 +63,10 @@ app.get('/linkedin-callback', (req, res) => {
 
       console.log('Access Token:', token);  // Log the access token
 
-      // Step 4: Use the access token to make a request to LinkedIn's API to fetch organization posts
+      // Step 4: Use the access token to make a request to LinkedIn's API to fetch the user's profile
       request.get(
         {
-          url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
+          url: 'https://api.linkedin.com/v2/me',  // This fetches your own LinkedIn profile data
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -78,15 +76,15 @@ app.get('/linkedin-callback', (req, res) => {
             return res.send("Error occurred during LinkedIn API request: " + error);
           }
 
-          const posts = JSON.parse(body);
-          res.send(posts);  // Send the posts back as the response
+          const profile = JSON.parse(body);
+          res.send(profile);  // Send the profile data back as the response
         }
       );
     }
   );
 });
 
-// Start the server
+// Step 5: Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
