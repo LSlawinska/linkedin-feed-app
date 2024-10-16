@@ -5,6 +5,17 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
+const cors = require('cors');
+
+// Allow CORS from the website's domain
+const corsOptions = {
+  origin: 'https://sdglines.com',  // Replace with your website's domain
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+
 // LinkedIn API credentials (use your actual Client ID, Client Secret, and Redirect URI)
 const CLIENT_ID = '86721rnve8r8sj';  // Your Client ID
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Your Client Secret
