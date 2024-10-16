@@ -75,20 +75,21 @@ app.get('/linkedin-callback', (req, res) => {
 });
 
 // Step 5: Create an API route to fetch LinkedIn organization posts
+// Route to fetch LinkedIn organization posts
 app.get('/fetch-organization-posts', (req, res) => {
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Use the numeric organization ID directly
-  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
+  // Numeric organization ID
+  const organizationId = '2280995';  // Your LinkedIn organization ID
 
   // Make the API request to fetch organization posts
   request.get(
     {
-      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(${organizationId})`,  // Use the numeric organization ID directly
+      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(${organizationId})`,  // Pass the numeric ID directly
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,  // Use the access token
       },
     },
     (error, response, body) => {
@@ -96,11 +97,12 @@ app.get('/fetch-organization-posts', (req, res) => {
         return res.status(500).send("Error occurred during LinkedIn API request: " + error);
       }
 
-      const posts = JSON.parse(body);
+      const posts = JSON.parse(body);  // Parse the posts
       res.json(posts);  // Send the posts back as the response
     }
   );
 });
+
 
 
 // Step 6: Create an API route to fetch LinkedIn organization profile
