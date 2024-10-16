@@ -6,8 +6,8 @@ const app = express();
 app.use(bodyParser.json());
 
 // LinkedIn API credentials (use your actual Client ID, Client Secret, and Redirect URI)
-const CLIENT_ID = '86721rnve8r8sj';
-const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';
+const CLIENT_ID = '86721rnve8r8sj';  // Your Client ID
+const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Your Client Secret
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
 // Force HTTPS redirection to avoid issues with SSL or mixed content
@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 
 // Step 1: Redirect to LinkedIn for OAuth with logging
 app.get('/auth/linkedin', (req, res) => {
-  const scope = 'r_liteprofile';  // Use basic profile scope for testing
+  const scope = 'r_organization_social';  // Use organization-level scope for reading posts
   const redirectUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}`;
   
   console.log('Redirecting to LinkedIn with URL:', redirectUrl);  // Log the redirect URL
@@ -63,10 +63,10 @@ app.get('/linkedin-callback', (req, res) => {
 
       console.log('Access Token:', token);  // Log the access token
 
-      // Step 4: Use the access token to make a request to LinkedIn's API to fetch the user's profile
+      // Step 4: Use the access token to make a request to LinkedIn's API to fetch organization posts
       request.get(
         {
-          url: 'https://api.linkedin.com/v2/me',  // This fetches your own LinkedIn profile data
+          url: 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn:li:organization:2280995)',  // Replace with your organization ID
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -76,8 +76,8 @@ app.get('/linkedin-callback', (req, res) => {
             return res.send("Error occurred during LinkedIn API request: " + error);
           }
 
-          const profile = JSON.parse(body);
-          res.send(profile);  // Send the profile data back as the response
+          const posts = JSON.parse(body);
+          res.send(posts);  // Send the posts back as the response
         }
       );
     }
