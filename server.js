@@ -69,12 +69,12 @@ app.get('/linkedin-callback', (req, res) => {
 
       // Step 4: Store the access token and inform the user
       accessToken = token;  // Store the access token in the global variable
-      res.send("Access token acquired. You can now fetch organization posts or profile using /fetch-organization-posts or /fetch-organization-profile.");
+      res.send("Access token acquired. You can now fetch organization posts using /fetch-organization-posts.");
     }
   );
 });
 
-// Step 5: Create an API route to fetch LinkedIn organization shares (instead of ugcPosts)
+// Step 5: Create an API route to fetch the 5 most recent LinkedIn organization posts
 app.get('/fetch-organization-posts', (req, res) => {
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
@@ -83,10 +83,10 @@ app.get('/fetch-organization-posts', (req, res) => {
   // Numeric organization ID
   const organizationId = '2280995';  // Your LinkedIn organization ID
 
-  // Make the API request to fetch organization shares
+  // Make the API request to fetch the 5 most recent organization posts
   request.get(
     {
-      url: `https://api.linkedin.com/v2/shares?q=owners&owners=urn:li:organization:${organizationId}`,  // Simpler shares endpoint
+      url: `https://api.linkedin.com/v2/ugcPosts?q=authors&authors=urn:li:organization:${organizationId}&count=5&sortBy=LAST_MODIFIED`,  // Fetch 5 most recent posts
       headers: {
         Authorization: `Bearer ${accessToken}`,  // Use the access token
       },
@@ -96,65 +96,8 @@ app.get('/fetch-organization-posts', (req, res) => {
         return res.status(500).send("Error occurred during LinkedIn API request: " + error);
       }
 
-      const shares = JSON.parse(body);  // Parse the shares
-      res.json(shares);  // Send the shares back as the response
-    }
-  );
-});
-
-
-// Step 6: Create an API route to fetch LinkedIn organization profile
-app.get('/fetch-organization-profile', (req, res) => {
-  if (!accessToken) {
-    return res.status(403).send("No access token available. Please authenticate first.");
-  }
-
-  // Use the numeric organization ID directly
-  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
-
-  // Make the API request to fetch organization profile
-  request.get(
-    {
-      url: `https://api.linkedin.com/v2/organizations/${organizationId}`,  // Use the numeric organization ID directly
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-    (error, response, body) => {
-      if (error) {
-        return res.status(500).send("Error occurred during LinkedIn API request: " + error);
-      }
-
-      const organizationProfile = JSON.parse(body);
-      res.json(organizationProfile);  // Send the organization profile back as the response
-    }
-  );
-});
-
-// Step 7: Create an API route to fetch LinkedIn organization followers (New test)
-app.get('/fetch-organization-followers', (req, res) => {
-  if (!accessToken) {
-    return res.status(403).send("No access token available. Please authenticate first.");
-  }
-
-  // Use the numeric organization ID directly
-  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
-
-  // Make the API request to fetch organization followers
-  request.get(
-    {
-      url: `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}`,  // Followers API
-      headers: {
-        Authorization: `Bearer ${accessToken}`,  // Use the access token
-      },
-    },
-    (error, response, body) => {
-      if (error) {
-        return res.status(500).send("Error occurred during LinkedIn API request: " + error);
-      }
-
-      const followersData = JSON.parse(body);
-      res.json(followersData);  // Send the followers data back as the response
+      const posts = JSON.parse(body);  // Parse the posts
+      res.json(posts);  // Send the posts back as the response
     }
   );
 });
