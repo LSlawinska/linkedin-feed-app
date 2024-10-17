@@ -2,6 +2,7 @@ const express = require('express');
 const request = require('request');
 const bodyParser = require('body-parser');
 const cors = require('cors');  // Import CORS middleware
+const fs = require('fs');  // Import file system to store the token
 
 const app = express();
 app.use(bodyParser.json());
@@ -20,8 +21,21 @@ const CLIENT_ID = '86721rnve8r8sj';  // Replace with your Client ID
 const CLIENT_SECRET = 'WPL_AP1.uhrvKkfbXItXmodx.xyv+Yg==';  // Replace with your Client Secret
 const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';  // Your actual callback URL
 
-// Global variable to store the access token
-let accessToken = null;  // Initialize as null
+// Helper function to read access token from file
+function getStoredAccessToken() {
+  try {
+    const tokenData = fs.readFileSync('access_token.json', 'utf-8');
+    return JSON.parse(tokenData).access_token;
+  } catch (err) {
+    console.error('Error reading access token:', err);
+    return null;
+  }
+}
+
+// Helper function to store access token in file
+function storeAccessToken(token) {
+  fs.writeFileSync('access_token.json', JSON.stringify({ access_token: token }), 'utf-8');
+}
 
 // Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
 app.get('/auth/linkedin', (req, res) => {
@@ -30,7 +44,6 @@ app.get('/auth/linkedin', (req, res) => {
   
   res.redirect(redirectUrl);  // Redirect to LinkedIn for authorization
 });
-
 
 // Step 2: Handle LinkedIn's OAuth callback and capture the authorization code
 app.get('/linkedin-callback', (req, res) => {
@@ -67,28 +80,29 @@ app.get('/linkedin-callback', (req, res) => {
 
       console.log('Access Token:', token);  // Log the access token
 
-      // Step 4: Store the access token and inform the user
-      accessToken = token;  // Store the access token in the global variable
-      res.send("Access token acquired. You can now fetch organization posts or profile using /fetch-organization-posts or /fetch-organization-profile.");
+      // Step 4: Store the access token in a file
+      storeAccessToken(token);
+      res.send("Access token acquired and stored. You can now fetch organization posts or profile using /fetch-organization-posts or /fetch-organization-profile.");
     }
   );
 });
 
-// Step 5: Create an API route to fetch LinkedIn organization shares (instead of ugcPosts)
+// Step 5: Create an API route to fetch LinkedIn organization shares
 app.get('/fetch-organization-posts', (req, res) => {
+  const accessToken = getStoredAccessToken();  // Get the stored token
+
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Numeric organization ID
   const organizationId = '2280995';  // Your LinkedIn organization ID
 
   // Make the API request to fetch organization shares
   request.get(
     {
-      url: `https://api.linkedin.com/v2/shares?q=owners&owners=urn:li:organization:${organizationId}`,  // Simpler shares endpoint
+      url: `https://api.linkedin.com/v2/shares?q=owners&owners=urn:li:organization:${organizationId}`,
       headers: {
-        Authorization: `Bearer ${accessToken}`,  // Use the access token
+        Authorization: `Bearer ${accessToken}`,  // Use the stored access token
       },
     },
     (error, response, body) => {
@@ -102,22 +116,22 @@ app.get('/fetch-organization-posts', (req, res) => {
   );
 });
 
-
 // Step 6: Create an API route to fetch LinkedIn organization profile
 app.get('/fetch-organization-profile', (req, res) => {
+  const accessToken = getStoredAccessToken();  // Get the stored token
+
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Use the numeric organization ID directly
-  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
+  const organizationId = '2280995';  // Your LinkedIn organization ID
 
   // Make the API request to fetch organization profile
   request.get(
     {
-      url: `https://api.linkedin.com/v2/organizations/${organizationId}`,  // Use the numeric organization ID directly
+      url: `https://api.linkedin.com/v2/organizations/${organizationId}`,
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,  // Use the stored access token
       },
     },
     (error, response, body) => {
@@ -133,19 +147,20 @@ app.get('/fetch-organization-profile', (req, res) => {
 
 // Step 7: Create an API route to fetch LinkedIn organization followers (New test)
 app.get('/fetch-organization-followers', (req, res) => {
+  const accessToken = getStoredAccessToken();  // Get the stored token
+
   if (!accessToken) {
     return res.status(403).send("No access token available. Please authenticate first.");
   }
 
-  // Use the numeric organization ID directly
-  const organizationId = '2280995';  // Replace with your actual LinkedIn organization ID
+  const organizationId = '2280995';  // Your LinkedIn organization ID
 
   // Make the API request to fetch organization followers
   request.get(
     {
-      url: `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}`,  // Followers API
+      url: `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${organizationId}`,
       headers: {
-        Authorization: `Bearer ${accessToken}`,  // Use the access token
+        Authorization: `Bearer ${accessToken}`,  // Use the stored access token
       },
     },
     (error, response, body) => {
