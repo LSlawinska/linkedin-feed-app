@@ -24,7 +24,7 @@ const REDIRECT_URI = 'https://linkedin-feed-app.onrender.com/linkedin-callback';
 // Helper function to read access token from file
 function getStoredAccessToken() {
   try {
-    const tokenData = fs.readFileSync('access_token.json', 'utf-8');
+    const tokenData = fs.readFileSync('access-token.json', 'utf-8');
     return JSON.parse(tokenData).access_token;
   } catch (err) {
     console.error('Error reading access token:', err);
@@ -34,7 +34,7 @@ function getStoredAccessToken() {
 
 // Helper function to store access token in file
 function storeAccessToken(token) {
-  fs.writeFileSync('access_token.json', JSON.stringify({ access_token: token }), 'utf-8');
+  fs.writeFileSync('access-token.json', JSON.stringify({ access_token: token }), 'utf-8');
 }
 
 // Step 1: Redirect to LinkedIn for OAuth with r_organization_social scope
@@ -145,7 +145,7 @@ app.get('/fetch-organization-profile', (req, res) => {
   );
 });
 
-// Step 7: Create an API route to fetch LinkedIn organization followers (New test)
+// Step 7: Create an API route to fetch LinkedIn organization followers
 app.get('/fetch-organization-followers', (req, res) => {
   const accessToken = getStoredAccessToken();  // Get the stored token
 
